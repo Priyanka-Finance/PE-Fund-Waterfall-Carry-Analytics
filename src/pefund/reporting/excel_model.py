@@ -133,6 +133,9 @@ BPS = '#,##0;(#,##0);"-"'
 
 WRAP = Alignment(wrap_text=True, vertical="top")
 CENTER = Alignment(horizontal="center", vertical="center", wrap_text=True)
+MIDDLE = Alignment(horizontal="center")
+RIGHT = Alignment(horizontal="right")
+INDENT = Alignment(horizontal="left", indent=1)
 
 KIND_FONT = {"input": F_INPUT, "formula": F_FORMULA, "link": F_LINK, "python": F_PYTHON, "label": F_LABEL,
              "bold": F_BOLD, "note": F_NOTE, "section": F_SECTION, "title": F_TITLE}  # fmt: skip
@@ -293,17 +296,18 @@ def _inputs_sheet(wb: Workbook, cfg: FundConfig) -> None:
             value = dt.date.fromisoformat(value)
         live = defined in ("wf_type", "pref_rate", "pref_comp", "catch_up", "carry_rate", "cb_enabled",
                            "cb_after_tax", "cb_tax_rate", "escrow_pct")  # fmt: skip
+        long_text = kind == "text" and len(str(value)) > 16  # would be cut off if right-aligned
         _put(ws, f"A{row}", label)
         _put(ws, f"B{row}", value, "input", INPUT_FORMATS.get(kind), FILL_KEY if live else None,
-             Alignment(horizontal="right"))  # fmt: skip
+             Alignment(horizontal="left" if long_text else "right"))  # fmt: skip
         if kind.startswith("choice:"):
             choices = kind.split(":", 1)[1]
-            _put(ws, f"C{row}", choices.replace(",", " | "), "note")
+            _put(ws, f"C{row}", choices.replace(",", " | "), "note", align=INDENT)
             validation = DataValidation(type="list", formula1=f'"{choices}"', allow_blank=False)
             ws.add_data_validation(validation)
             validation.add(f"B{row}")
         elif kind == "bool":
-            _put(ws, f"C{row}", "TRUE | FALSE", "note")
+            _put(ws, f"C{row}", "TRUE | FALSE", "note", align=INDENT)
             validation = DataValidation(type="list", formula1='"TRUE,FALSE"', allow_blank=False)
             ws.add_data_validation(validation)
             validation.add(f"B{row}")
@@ -573,8 +577,9 @@ def _waterfall_sheet(wb: Workbook, sheet: str, n: int, *, american: bool, unit: 
          ("Escrow", "escrow_pct", PCT2), ("Compounding", "pref_comp", None)],
         strict=True,
     ):  # fmt: skip
-        _put(ws, f"{column}4", label, "note")
-        _put(ws, f"{get_column_letter(ws[f'{column}4'].column + 1)}4", f"={name}", "link", fmt)
+        _put(ws, f"{column}4", f"{label}:", "note", align=Alignment(horizontal="right"))
+        _put(ws, f"{get_column_letter(ws[f'{column}4'].column + 1)}4", f"={name}", "link", fmt,
+             align=Alignment(horizontal="left"))  # fmt: skip
 
     groups = {"D": "From the engine", "F": "Hurdle", "L": "Tier 1-2: LPs", "O": "Tier 3: GP catch-up",
               "S": "Tier 4: split", "V": "Totals", "Y": "Running balances", "AC": "Escrow",
@@ -1247,20 +1252,22 @@ def _checks_sheet(wb: Workbook, bundle: dict[str, Any], last: int, refs: dict[st
     row = 6
     for label, name, value, fmt in levers:
         _put(ws, f"A{row}", label)
-        _put(ws, f"B{row}", f"={name}", "link", fmt)
-        _put(ws, f"C{row}", value, "python", fmt)
-        _put(ws, f"D{row}", f'=IF(B{row}=C{row},"Yes","Changed")', "formula")
+        _put(ws, f"B{row}", f"={name}", "link", fmt, align=RIGHT)
+        _put(ws, f"C{row}", value, "python", fmt, align=RIGHT)
+        _put(ws, f"D{row}", f'=IF(B{row}=C{row},"Yes","Changed")', "formula", align=MIDDLE)
         row += 1
     lever_first, lever_last = 6, row - 1
     row += 1
     _put(ws, f"A{row}", "Levers unchanged since the Python run?", "bold")
-    _put(ws, f"B{row}", f'=IF(COUNTIF(D{lever_first}:D{lever_last},"Changed")=0,"Yes","No")', "formula", bold=True)
+    _put(ws, f"B{row}", f'=IF(COUNTIF(D{lever_first}:D{lever_last},"Changed")=0,"Yes","No")', "formula",
+         align=Alignment(horizontal="right"), bold=True)  # fmt: skip
     unchanged = f"$B${row}"
     _put(
         ws,
         f"C{row}",
         "If No, differences below are expected: Excel has recalculated, the Python values have not.",
         "note",
+        align=INDENT,
     )
 
     row += 2
@@ -1277,7 +1284,7 @@ def _checks_sheet(wb: Workbook, bundle: dict[str, Any], last: int, refs: dict[st
         _put(ws, f"C{row}", value, "python", fmt)
         _put(ws, f"D{row}", f"=B{row}-C{row}", "formula", "0.000000;-0.000000;0.000000")
         _put(ws, f"E{row}", f'=IF(ABS(D{row})<={tolerance},"OK",IF({unchanged}="Yes","DIFFERENCE","Lever changed"))',
-             "formula")  # fmt: skip
+             "formula", align=MIDDLE)  # fmt: skip
         row += 1
 
     def heading(label: str) -> None:
@@ -1516,13 +1523,15 @@ def _readme_sheet(wb: Workbook, bundle: dict[str, Any], source: str) -> None:
     ]  # fmt: skip
     row = 4
     for kind, text in lines:
+        if kind == "section" and row > 4:
+            row += 1  # blank line before each heading
         if kind == "key":
             _put(ws, f"A{row}", text, "input", fill=FILL_KEY)
         else:
             _put(ws, f"A{row}", text, kind, align=WRAP if kind == "label" else None)
             if kind == "label" and len(text) > 120:
                 ws.row_dimensions[row].height = 14.0 * (len(text) // 120 + 1)
-        row += 1 if kind != "section" else 1
+        row += 1
     ws.column_dimensions["A"].width = 125
     ws.sheet_view.showGridLines = False
 

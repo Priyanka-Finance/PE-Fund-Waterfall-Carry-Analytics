@@ -117,6 +117,16 @@ def test_too_many_events_for_the_template_is_reported(base_config):
 # Independent recalculation with LibreOffice
 # --------------------------------------------------------------------------- #
 @needs_libreoffice
+def test_recalculation_never_overwrites_the_original(workbook_path):
+    before = workbook_path.read_bytes()
+    copy = recalculate(workbook_path)
+    assert copy != workbook_path and copy.exists()
+    assert workbook_path.read_bytes() == before
+    with pytest.raises(RuntimeError, match="not overwritten"):
+        recalculate(workbook_path, workbook_path)
+
+
+@needs_libreoffice
 def test_excel_formulas_reconcile_to_the_python_engine(workbook_path, tmp_path):
     out = read_checks(recalculate(workbook_path, tmp_path / "recalculated.xlsx"))
     assert out["errors"] == []
@@ -132,10 +142,16 @@ def test_excel_formulas_reconcile_to_the_python_engine(workbook_path, tmp_path):
         {"waterfall.type": "american", "waterfall.pref_compounding": "quarterly", "clawback.escrow_pct": 0.3},
         {"waterfall.pref_rate": 0.10, "waterfall.carry_rate": 0.25, "waterfall.catch_up_rate": 0.8},
         {"waterfall.pref_compounding": "simple", "waterfall.catch_up_rate": 0.0},
+        {"clawback.after_tax_limit": False, "clawback.escrow_pct": 0.5},
+        {"clawback.assumed_tax_rate": 0.25, "waterfall.pref_compounding": "quarterly"},
+        {"clawback.enabled": False, "waterfall.carry_rate": 0.15},
     ],
 )
 def test_changing_levers_in_excel_matches_a_python_rerun(base_config, tmp_path, levers):
-    """Start from a loss-making fund so that the clawback and the escrow are exercised too."""
+    """Every live lever is changed at least once, and both waterfall sheets are checked each time.
+
+    The starting point is a loss-making fund, so the clawback and the escrow are exercised too.
+    """
     scenario = sc.load_scenarios("configs/scenarios.yaml")["late_losses_deal_by_deal"]["overrides"]
     cfg = base_config.with_overrides(scenario)
     path = xm.build_workbook(build_bundle(cfg, None, sensitivities=False, monte_carlo=False), tmp_path / "model.xlsx")
@@ -144,9 +160,9 @@ def test_changing_levers_in_excel_matches_a_python_rerun(base_config, tmp_path, 
         if row[5].value in levers:
             row[1].value = levers[row[5].value]
     wb.save(path)
-    recalculate(path)
+    calculated = recalculate(path, tmp_path / "calculated.xlsx")
 
-    values = load_workbook(path, data_only=True)
+    values = load_workbook(calculated, data_only=True)
     n = run_fund(cfg, interim=False).n_quarters
     anchor = xm.ROW0 + n - 1 + 3
     for sheet, kind in ((xm.S_EU, "european"), (xm.S_DBD, "american")):
@@ -161,6 +177,6 @@ def test_changing_levers_in_excel_matches_a_python_rerun(base_config, tmp_path, 
         assert cell("payable") == pytest.approx(expected["clawback_paid"], abs=1e-7)
         assert cell("lp_incl") == pytest.approx(expected["total_lp_distributions"], abs=1e-7)
         assert cell("shortfall") == pytest.approx(expected["clawback_shortfall"], abs=1e-7)
-    status = read_checks(path)
+    status = read_checks(calculated)
     assert status["errors"] == []
     assert status["overall"].startswith("Levers changed")  # the workbook says the Python values are now stale

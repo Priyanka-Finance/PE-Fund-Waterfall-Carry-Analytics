@@ -321,7 +321,7 @@ def cmd_excel(args: argparse.Namespace) -> int:
 def cmd_verify_excel(args: argparse.Namespace) -> int:
     from .reporting.excel_verify import read_checks, recalculate
 
-    target = recalculate(args.workbook, args.out)
+    target = recalculate(args.workbook, args.out)  # a calculated copy; the workbook itself is left untouched
     report = read_checks(target)
     for check in report["checks"]:
         print(f"{check['status']:<14} {check['item']}")
@@ -434,7 +434,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("verify-excel", help="recalculate a workbook with LibreOffice and read its Checks sheet")
     p.add_argument("workbook")
-    p.add_argument("--out", help="write the recalculated copy here instead of in place")
+    p.add_argument("--out", help="where to write the calculated copy (default: a temporary file)")
     p.set_defaults(func=cmd_verify_excel)
 
     p = sub.add_parser("all", help="run everything: tables, charts, Excel model and commentary")

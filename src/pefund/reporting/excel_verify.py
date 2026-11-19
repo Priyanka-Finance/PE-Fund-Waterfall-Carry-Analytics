@@ -31,24 +31,43 @@ def libreoffice_binary() -> str | None:
 
 
 def recalculate(path: str | Path, out_path: str | Path | None = None, timeout: int = 180) -> Path:
-    """Recalculate ``path`` with LibreOffice and save the result (in place by default)."""
+    """Recalculate ``path`` with LibreOffice and return the path of the calculated copy.
+
+    The original workbook is never modified: LibreOffice re-saves a file in its
+    own way, which can alter charts and formatting, so the result is written to
+    ``out_path`` (or to a temporary file when that is omitted) and should be
+    used for reading values only.
+    """
     binary = libreoffice_binary()
     if binary is None:
         raise RuntimeError("LibreOffice is not installed; open the workbook in Excel to calculate it instead")
     source = Path(path).resolve()
-    target = Path(out_path).resolve() if out_path else source
+    if out_path is None:
+        target = Path(tempfile.mkdtemp(prefix="pefund_recalc_")) / source.name
+    else:
+        target = Path(out_path).resolve()
+        if target == source:
+            raise RuntimeError("Choose a different output path: the original workbook is not overwritten")
     with tempfile.TemporaryDirectory() as tmp:
         profile = Path(tmp) / "profile"
         command = [
-            binary, f"-env:UserInstallation=file://{profile}", "--headless", "--norestore",
-            "--convert-to", "xlsx", "--outdir", tmp, str(source),
-        ]  # fmt: skip
+            binary,
+            f"-env:UserInstallation=file://{profile}",
+            "--headless",
+            "--norestore",
+            "--convert-to",
+            "xlsx",
+            "--outdir",
+            tmp,
+            str(source),
+        ]
         completed = subprocess.run(command, capture_output=True, text=True, timeout=timeout, check=False)
         produced = Path(tmp) / source.name
         if not produced.exists():
             raise RuntimeError(
                 f"LibreOffice did not produce a workbook: {completed.stderr.strip() or completed.stdout}"
             )
+        target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(produced, target)
     return target
 
