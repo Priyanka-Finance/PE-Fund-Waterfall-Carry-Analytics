@@ -56,3 +56,9 @@ def test_python_example_in_the_readme_runs(monkeypatch, capsys):
     printed = capsys.readouterr().out.strip().splitlines()
     assert 0.0 < float(printed[0]) < 0.15  # the downside scenario's net IRR
     assert float(printed[-1]) == pytest.approx(-0.258, abs=0.001)  # breakeven against the 8% hurdle
+
+
+def test_block_shows_financing_effects_when_there_are_any():
+    cfg = load_config(ROOT / "configs" / "base_case.yaml").with_values({"subscription_line.enabled": True})
+    block = results_markdown(build_bundle(cfg, None, sensitivities=False, monte_carlo=False))
+    assert "of which fees / expenses / carry / financing and timing" in block

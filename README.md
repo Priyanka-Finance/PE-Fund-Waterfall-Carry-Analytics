@@ -63,7 +63,8 @@ out of date.
 | --- | ---: |
 | Gross IRR / gross MOIC (deal level) | 21.0% / 2.39x |
 | Net IRR / net TVPI (to LPs) | 15.2% / 1.83x |
-| Gross-to-net spread | 575 bps = fees 307 + expenses 51 + carry 218 |
+| Gross-to-net spread | 575 bps |
+| of which fees / expenses / carry | 307 / 51 / 218 bps |
 | LP capital paid in / distributed | 466.1 / 853.7 |
 | Management fees, net of offsets | 58.5 |
 | Carried interest, net of clawback | 96.9 |
@@ -91,6 +92,8 @@ out of date.
 | LP-friendly terms | whole-of-fund | 2.39x | 17.1% | 1.99x | 54.4 | 0.0 | 54.4 |
 | GP-friendly terms | deal-by-deal | 2.39x | 13.0% | 1.69x | 112.9 | 0.0 | 112.9 |
 | Subscription line | whole-of-fund | 2.39x | 16.5% | 1.78x | 94.0 | 0.0 | 94.0 |
+
+*Figures are rounded separately, so components may not add exactly to totals.*
 <!-- results:end -->
 
 ## What the model shows
@@ -320,7 +323,7 @@ independent ways:
 | **Grounding** | Every figure in the generated commentary traces to the model output |
 | **This README** | The results table above is regenerated from the model by a test |
 
-The suite has 259 tests and 97% line coverage. It passes on Python 3.10 with the oldest declared
+The suite has 260 tests and 97% line coverage. It passes on Python 3.10 with the oldest declared
 version of every dependency and on Python 3.13 with current versions. The included GitHub Actions
 workflow runs lint and tests on both Python versions.
 

@@ -12,7 +12,7 @@ traced back to the model.
 ## Pipeline
 
 ```mermaid
-flowchart LR
+flowchart TD
     A[Fund engine and analytics] --> B[Fact pack<br/>about 500 rounded figures]
     B --> C{Language model<br/>configured?}
     C -- yes --> D[LLM writes commentary<br/>from the fact pack only]

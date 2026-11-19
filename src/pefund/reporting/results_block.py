@@ -50,21 +50,18 @@ def results_markdown(bundle: dict[str, Any]) -> str:
         f"{len(cfg.deals)} deals, money in {unit}.",
         "",
     ]
+    costs = [("fees", "Management fees"), ("expenses", "Partnership expenses"), ("carry", "Carried interest")]
+    if abs(bridge["Financing and timing"]) >= 0.5:
+        costs.append(("financing and timing", "Financing and timing"))
+    costs_label = "of which " + " / ".join(name for name, _ in costs)
+    costs_value = " / ".join(f"{-bridge[step]:,.0f}" for _, step in costs) + " bps"
     lines += _table(
         ["Base case, at liquidation", "Result"],
         [
             ["Gross IRR / gross MOIC (deal level)", f"{_pct(s['gross_irr'])} / {_mult(s['gross_moic'])}"],
             ["Net IRR / net TVPI (to LPs)", f"{_pct(s['net_irr'])} / {_mult(s['tvpi'])}"],
-            [
-                "Gross-to-net spread",
-                f"{-bridge['Net return to LPs']:,.0f} bps = fees {-bridge['Management fees']:,.0f} "
-                f"+ expenses {-bridge['Partnership expenses']:,.0f} + carry {-bridge['Carried interest']:,.0f}"
-                + (
-                    f" + financing and timing {-bridge['Financing and timing']:,.0f}"
-                    if abs(bridge["Financing and timing"]) >= 0.5
-                    else ""
-                ),
-            ],
+            ["Gross-to-net spread", f"{-bridge['Net return to LPs']:,.0f} bps"],
+            [costs_label, costs_value],
             ["LP capital paid in / distributed", f"{_money(s['paid_in'])} / {_money(s['distributed'])}"],
             ["Management fees, net of offsets", _money(s["total_management_fees"])],
             ["Carried interest, net of clawback", _money(s["carry_net"])],
@@ -108,7 +105,7 @@ def results_markdown(bundle: dict[str, Any]) -> str:
             ],
             text_columns=2,
         )
-    lines.append(END)
+    lines += ["", "*Figures are rounded separately, so components may not add exactly to totals.*", END]
     return "\n".join(lines)
 
 
