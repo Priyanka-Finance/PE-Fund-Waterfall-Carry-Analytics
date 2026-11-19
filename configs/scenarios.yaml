@@ -1,0 +1,108 @@
+# =============================================================================
+# Named scenarios.  Each one is a set of overrides merged into the base case;
+# the layout of `overrides` mirrors configs/base_case.yaml.
+#
+# Shocks:
+#   exit_multiple_pct     relative change in exit valuation multiples (-0.15 = 15% lower)
+#   ebitda_growth_shift   additive change to EBITDA growth (-0.03 = 3 points lower)
+#   hold_shift_quarters   quarters added to every holding period
+#   deal_overrides        per-deal: exit_multiple_pct, ebitda_growth_shift,
+#                         hold_shift_quarters, gross_moic, write_off
+#
+# `label` is the display name used in tables and charts.
+# The first scenario is the reference for the "vs base" columns.
+# =============================================================================
+scenarios:
+  base:
+    label: Base case
+    description: Base case as underwritten.
+    overrides: {}
+
+  upside:
+    label: Upside
+    description: Strong exit market - multiples 10% higher, EBITDA growth 2 points higher, exits two quarters early.
+    overrides:
+      shocks: {exit_multiple_pct: 0.10, ebitda_growth_shift: 0.02, hold_shift_quarters: -2}
+
+  downside:
+    label: Downside
+    description: Soft market - multiples 15% lower, EBITDA growth 3 points lower, exits one year late.
+    overrides:
+      shocks: {exit_multiple_pct: -0.15, ebitda_growth_shift: -0.03, hold_shift_quarters: 4}
+
+  severe_downside:
+    label: Severe downside
+    description: Recession - multiples 30% lower, growth 5 points lower, exits 18 months late, one more write-off.
+    overrides:
+      shocks:
+        exit_multiple_pct: -0.30
+        ebitda_growth_shift: -0.05
+        hold_shift_quarters: 6
+        deal_overrides:
+          Project Delta: {write_off: true}
+
+  delayed_exits:
+    label: Delayed exits
+    description: Same businesses and multiples, but every exit slips by 18 months.
+    overrides:
+      shocks: {hold_shift_quarters: 6}
+
+  deal_by_deal:
+    label: Deal-by-deal waterfall
+    description: Base case under a deal-by-deal (American) waterfall with a 30% carry escrow.
+    overrides:
+      waterfall: {type: american}
+      clawback: {escrow_pct: 0.30}
+
+  late_losses_deal_by_deal:
+    label: Late losses, deal-by-deal
+    description: Deal-by-deal waterfall; early exits succeed, the later vintage fails - the GP clawback is triggered.
+    overrides:
+      waterfall: {type: american}
+      shocks:
+        deal_overrides:
+          Project Cobalt: {exit_multiple_pct: -0.35}
+          Project Delta: {write_off: true}
+          Project Echo: {exit_multiple_pct: -0.45}
+          Project Falcon: {exit_multiple_pct: -0.55}
+          Project Helix: {exit_multiple_pct: -0.55}
+          Project Ion: {exit_multiple_pct: -0.55}
+          Project Lumen: {gross_moic: 0.5}
+
+  late_losses_whole_of_fund:
+    label: Late losses, whole-of-fund
+    description: The same outcomes under a whole-of-fund (European) waterfall - no carry is paid, so nothing to claw back.
+    overrides:
+      waterfall: {type: european}
+      shocks:
+        deal_overrides:
+          Project Cobalt: {exit_multiple_pct: -0.35}
+          Project Delta: {write_off: true}
+          Project Echo: {exit_multiple_pct: -0.45}
+          Project Falcon: {exit_multiple_pct: -0.55}
+          Project Helix: {exit_multiple_pct: -0.55}
+          Project Ion: {exit_multiple_pct: -0.55}
+          Project Lumen: {gross_moic: 0.5}
+
+  lp_friendly_terms:
+    label: LP-friendly terms
+    description: LP-friendly terms - 1.5% fee stepping down to 1.25%, 15% carry, no catch-up (hard hurdle).
+    overrides:
+      management_fee: {rate_investment_period: 0.015, rate_post_investment_period: 0.0125}
+      waterfall: {carry_rate: 0.15, catch_up_rate: 0.0}
+
+  gp_friendly_terms:
+    label: GP-friendly terms
+    description: GP-friendly terms - 2% on commitments for the whole term, 50% fee offset, 25% carry over a 6% hurdle, deal-by-deal.
+    overrides:
+      management_fee:
+        rate_post_investment_period: 0.02
+        basis_post_investment_period: committed
+        offset_pct: 0.5
+      waterfall: {type: american, carry_rate: 0.25, pref_rate: 0.06}
+
+  subscription_line:
+    label: Subscription line
+    description: Base case with a subscription line that carries each capital call for two quarters at 6.5%.
+    overrides:
+      subscription_line: {enabled: true, quarters_outstanding: 2, interest_rate: 0.065}

@@ -1,0 +1,181 @@
+# =============================================================================
+# Base case - Sample Mid-Market Buyout Fund I
+#
+# A HYPOTHETICAL fund built for demonstration.  The fund, its investors and its
+# portfolio companies are invented; no figure describes a real entity.
+#
+# Units: USD millions.  Rates are decimals (0.08 = 8%).
+# Dates snap to the calendar quarter-end on or after the date given.
+# =============================================================================
+
+fund:
+  name: "Sample Mid-Market Buyout Fund I (hypothetical)"
+  currency: USD
+  unit: m
+  first_close: 2022-03-31
+  committed_capital: 500.0        # total commitments, including the GP's
+  gp_commitment_pct: 0.02         # GP commits 2%; fee-free and carry-free
+  investment_period_years: 5
+  term_years: 10
+  max_extension_years: 2          # two one-year extensions
+  valuation_date: 2026-09-30      # "as of" date for the interim snapshot
+
+management_fee:
+  rate_investment_period: 0.02          # 2.0% p.a. during the investment period...
+  basis_investment_period: committed    # ...on committed capital
+  rate_post_investment_period: 0.0175   # steps down to 1.75% afterwards...
+  basis_post_investment_period: net_invested   # ...on cost of unrealised investments
+  offset_pct: 1.0                       # 100% of portfolio-company fees offset the fee
+  transaction_fee_pct: 0.01             # 1% transaction fee on equity invested
+  monitoring_fee_pct: 0.0
+
+expenses:
+  organizational: 1.5             # one-off, at first close
+  annual_operating: 1.0           # audit, administration, legal
+
+waterfall:
+  type: european                  # european = whole-of-fund | american = deal-by-deal
+  pref_rate: 0.08                 # 8% preferred return (hurdle)
+  pref_compounding: annual        # annual | quarterly | simple
+  catch_up_rate: 1.0              # 100% GP catch-up (0 = no catch-up)
+  carry_rate: 0.20                # 20% carried interest
+  expense_allocation: pro_rata    # american only: pro_rata | all_to_date
+  writedowns_as_realized: true    # american only
+
+clawback:
+  enabled: true
+  after_tax_limit: true           # clawback capped at carry net of assumed tax
+  assumed_tax_rate: 0.40
+  escrow_pct: 0.0                 # share of carry held in escrow until liquidation
+
+recycling:
+  enabled: false
+  cap_pct_of_commitments: 0.10
+
+subscription_line:
+  enabled: false
+  quarters_outstanding: 2
+  interest_rate: 0.065
+
+valuation:
+  hold_at_cost_quarters: 4        # investments are held at cost for the first year
+
+# LP register.  Commitments must add up to committed capital less the GP's share.
+investors:
+  - {name: "Public Pension Plan A", commitment: 150.0}
+  - {name: "Sovereign Wealth Fund B", commitment: 100.0}
+  - {name: "University Endowment C", commitment: 75.0}
+  - {name: "Insurance Company D", commitment: 60.0}
+  - {name: "Fund of Funds E", commitment: 50.0}
+  - {name: "Family Office F", commitment: 35.0}
+  - {name: "Development Finance Institution G", commitment: 20.0}
+
+# -----------------------------------------------------------------------------
+# Portfolio: nine control buyouts (operating-case mode) and three growth-equity
+# positions (direct-MOIC mode), including one partial loss and one write-off.
+#
+# Operating mode: exit equity = EBITDA x EV/EBITDA multiple - net debt.
+#   entry_leverage  = net debt / EBITDA at entry
+#   cash_conversion = share of each year's EBITDA that pays down net debt
+# -----------------------------------------------------------------------------
+deals:
+  - name: Project Atlas
+    sector: Industrial Services
+    strategy: buyout
+    investments: [{date: 2022-06-30, amount: 35.0}]
+    exit_date: 2026-06-30
+    operating: {entry_ebitda: 9.0, entry_ev_multiple: 9.0, entry_leverage: 4.5,
+                ebitda_growth: 0.12, exit_ev_multiple: 10.0, cash_conversion: 0.30}
+
+  - name: Project Borealis
+    sector: Healthcare Services
+    strategy: buyout
+    investments: [{date: 2022-09-30, amount: 40.0}]
+    exit_date: 2027-09-30
+    operating: {entry_ebitda: 9.5, entry_ev_multiple: 11.0, entry_leverage: 5.5,
+                ebitda_growth: 0.09, exit_ev_multiple: 11.5, cash_conversion: 0.30}
+
+  - name: Project Juno
+    sector: Financial Technology
+    strategy: growth
+    investments:
+      - {date: 2022-12-31, amount: 20.0}
+      - {date: 2024-03-31, amount: 10.0}      # follow-on round
+    exit_date: 2027-06-30
+    gross_moic: 4.2
+    proceeds_events:
+      - {date: 2026-03-31, kind: partial_exit, share: 0.30, stake_sold: 0.35}
+
+  - name: Project Cobalt
+    sector: Software
+    strategy: buyout
+    investments: [{date: 2023-03-31, amount: 45.0}]
+    exit_date: 2028-03-31
+    operating: {entry_ebitda: 7.5, entry_ev_multiple: 14.0, entry_leverage: 6.0,
+                ebitda_growth: 0.15, exit_ev_multiple: 14.0, cash_conversion: 0.25}
+
+  - name: Project Delta
+    sector: Consumer
+    strategy: buyout
+    investments: [{date: 2023-06-30, amount: 30.0}]
+    exit_date: 2029-06-30
+    operating: {entry_ebitda: 8.0, entry_ev_multiple: 8.5, entry_leverage: 4.0,
+                ebitda_growth: 0.03, exit_ev_multiple: 7.5, cash_conversion: 0.25}
+
+  - name: Project Echo
+    sector: Business Services
+    strategy: buyout
+    investments: [{date: 2023-12-31, amount: 35.0}]
+    exit_date: 2028-12-31
+    operating: {entry_ebitda: 9.0, entry_ev_multiple: 10.0, entry_leverage: 5.0,
+                ebitda_growth: 0.10, exit_ev_multiple: 11.0, cash_conversion: 0.30}
+    proceeds_events:
+      - {date: 2026-12-31, kind: dividend_recap, share: 0.15}
+
+  - name: Project Falcon
+    sector: Industrial Technology
+    strategy: buyout
+    investments: [{date: 2024-06-30, amount: 40.0}]
+    exit_date: 2029-12-31
+    operating: {entry_ebitda: 9.0, entry_ev_multiple: 10.5, entry_leverage: 5.0,
+                ebitda_growth: 0.08, exit_ev_multiple: 10.5, cash_conversion: 0.30}
+
+  - name: Project Granite
+    sector: Building Products
+    strategy: buyout
+    investments: [{date: 2024-09-30, amount: 25.0}]
+    exit_date: 2030-09-30
+    operating: {entry_ebitda: 8.5, entry_ev_multiple: 8.0, entry_leverage: 4.5,
+                ebitda_growth: -0.04, exit_ev_multiple: 6.5, cash_conversion: 0.15}
+
+  - name: Project Kite
+    sector: Consumer Internet
+    strategy: growth
+    investments: [{date: 2024-12-31, amount: 25.0}]
+    exit_date: 2028-06-30
+    gross_moic: 0.0                           # full write-off
+
+  - name: Project Helix
+    sector: Healthcare Technology
+    strategy: buyout
+    investments: [{date: 2025-03-31, amount: 35.0}]
+    exit_date: 2030-03-31
+    operating: {entry_ebitda: 6.0, entry_ev_multiple: 13.0, entry_leverage: 5.5,
+                ebitda_growth: 0.14, exit_ev_multiple: 13.5, cash_conversion: 0.25}
+
+  - name: Project Ion
+    sector: Energy Services
+    strategy: buyout
+    investments: [{date: 2025-09-30, amount: 30.0}]
+    exit_date: 2031-03-31
+    operating: {entry_ebitda: 8.0, entry_ev_multiple: 9.0, entry_leverage: 4.5,
+                ebitda_growth: 0.07, exit_ev_multiple: 9.5, cash_conversion: 0.30}
+
+  - name: Project Lumen
+    sector: Climate Technology
+    strategy: growth
+    investments:
+      - {date: 2026-03-31, amount: 25.0}
+      - {date: 2027-03-31, amount: 10.0}      # follow-on round
+    exit_date: 2031-09-30
+    gross_moic: 2.2
