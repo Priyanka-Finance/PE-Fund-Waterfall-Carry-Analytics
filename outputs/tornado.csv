@@ -1,0 +1,8 @@
+parameter,label,unit,low_input,high_input,low_result,high_result,low_delta,high_delta,swing
+exit_multiple,Exit multiple change,pct,-0.150000,0.150000,0.105798,0.192404,-0.046417,0.040190,0.086607
+ebitda_growth,EBITDA growth change,pct_points,-0.020000,0.020000,0.129353,0.174468,-0.022861,0.022254,0.045115
+hold_shift,Holding period change (quarters),quarters,4.000000,-4.000000,0.143541,0.165432,-0.008674,0.013217,0.021891
+fee_rate,Management fee rate,pct,0.025000,0.015000,0.145011,0.159385,-0.007203,0.007171,0.014374
+carry_rate,Carried interest rate,pct,0.250000,0.150000,0.146263,0.157948,-0.005951,0.005734,0.011685
+catch_up_rate,GP catch-up rate,pct,1.000000,0.000000,0.152214,0.159512,0.000000,0.007298,0.007298
+pref_rate,Preferred return,pct,0.060000,0.100000,0.151697,0.152331,-0.000517,0.000117,0.000634

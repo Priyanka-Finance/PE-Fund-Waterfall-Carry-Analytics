@@ -1,0 +1,5 @@
+threshold,exit_multiple_change,gross_moic,gross_irr,net_irr,tvpi,carry_net
+LPs get their capital back (net TVPI = 1.0x),-0.429983,1.175045,0.035163,-0.000002,0.999992,0.000000
+LPs earn the preferred return (net IRR = 8%); carry starts above this,-0.258026,1.654406,0.115137,0.080000,1.408227,0.001268
+LPs earn a 15% net IRR,-0.007482,2.373443,0.207312,0.150000,1.816704,95.175225
+LPs earn a 20% net IRR,0.179513,2.910098,0.263420,0.200001,2.182698,137.795819
