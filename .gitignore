@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+env/
+
+# Tests and linters
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Secrets - API keys live in the environment or in .env, never in git
+.env
+.streamlit/secrets.toml
+
+# Editors and operating systems
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Excel lock files and LibreOffice temporaries
+~$*.xlsx
+.~lock.*#
+
+# Large and fully reproducible: 2,000 Monte Carlo trials (`pefund montecarlo` rebuilds it)
+outputs/monte_carlo_trials.csv
