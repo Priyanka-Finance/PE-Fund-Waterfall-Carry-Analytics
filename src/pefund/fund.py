@@ -158,6 +158,15 @@ class FundResult:
     totals: dict[str, float]
     flags: list[str] = field(default_factory=list)
     interim: bool = True
+    #: LP capital called, by purpose (one row per deal, then fees, then expenses) and quarter.
+    lp_capital_by_kind: np.ndarray | None = None
+    #: Share of each kind of capital that was eligible for return in each quarter's waterfall.
+    eligibility: np.ndarray | None = None
+
+    @property
+    def kind_names(self) -> list[str]:
+        """Row labels of ``lp_capital_by_kind`` and ``eligibility``."""
+        return [*self.schedule.names, "Management fees", "Partnership expenses"]
 
     # ------------------------------------------------------------------ #
     @property
@@ -377,6 +386,7 @@ def run_fund(
 
     names = [
         "investments", "gross_proceeds", "cost_relieved", "portfolio_fv", "cost_outstanding",
+        "mgmt_fee_basis", "mgmt_fee_rate",
         "mgmt_fee_gross", "fee_offset", "mgmt_fee_net", "portfolio_fees", "expenses", "line_interest",
         "lp_expenses", "line_interest_accrued",
         "lp_called_investments", "lp_called_fees", "lp_called_expenses", "lp_contributions",
@@ -415,6 +425,7 @@ def run_fund(
     line_interest_lp, line_interest_gp = np.zeros(n), np.zeros(n)
     line_draw_lp, line_draw_gp = np.zeros(n), np.zeros(n)
     ones = np.ones(n_deals + 2)
+    eligibility = np.ones((n_deals + 2, n))
 
     def hurdle_state(q: int, weights: np.ndarray, extra_capital: float = 0.0) -> tuple[float, float]:
         """Eligible capital not yet returned and preferred return accrued but unpaid."""
@@ -472,6 +483,7 @@ def run_fund(
             else:  # nav
                 basis = lp_pct * fv_q[q]
             fee_gross = fee_rate * basis / 4.0
+            a["mgmt_fee_basis"][q], a["mgmt_fee_rate"][q] = basis, fee_rate
         offset_credit += fee_terms.offset_pct * portfolio_fees * lp_pct
         offset_used = min(offset_credit, fee_gross)
         offset_credit -= offset_used
@@ -583,6 +595,7 @@ def run_fund(
         else:
             weights = ones
 
+        eligibility[:, q] = weights
         capital_out, pref_out = hurdle_state(q, weights)
         t1, t2, cu_gp, cu_lp, sp_lp, sp_gp = split_tiers(
             distributable, capital_out, pref_out, profit_cum, carry_cum, carry_rate, catch_up_rate
@@ -715,6 +728,7 @@ def run_fund(
         "clawback_shortfall": float(clawback_uncapped - clawback),
         "carry_net": carry_net,
         "peak_escrow": float(a["escrow_balance"].max()),
+        "whole_fund_pref_accrued": float(shadow_pref_accrued),
         "carry_pct_of_lp_class_profit": safe_ratio(carry_net, lp_dist_total - lp_contrib_total + carry_net),
         "first_carry_quarter": int(carry_dates[0]) if len(carry_dates) else -1,
         "first_carry_date": s.dates[int(carry_dates[0])] if len(carry_dates) else None,
@@ -729,7 +743,10 @@ def run_fund(
         "peak_line_balance": float(a["line_balance"].max()) if interim else float("nan"),
     }
 
-    result = FundResult(config=cfg, schedule=s, arrays=a, totals=totals, flags=flags, interim=interim)
+    result = FundResult(
+        config=cfg, schedule=s, arrays=a, totals=totals, flags=flags, interim=interim,
+        lp_capital_by_kind=contributions, eligibility=eligibility,
+    )  # fmt: skip
     if interim:
         _add_since_inception_metrics(result)
     return result

@@ -399,8 +399,10 @@ def chart_waterfall_tiers(european: FundResult, american: FundResult, path: Path
             ax.yaxis.set_major_formatter(lambda v, _: fmt_money(v, currency, unit))
         fig.subplots_adjust(top=0.675)
         _legend(fig, [(name, colour, "bar") for name, colour, _ in series], y=0.83)
-        _footnote(fig, "LP-class distributions by calendar year. Total carry is identical; only its timing differs. "
-                       "Table: waterfall_comparison.csv")  # fmt: skip
+        same = abs(european.totals["carry_net"] - american.totals["carry_net"]) < 0.05
+        verdict = ("Total carry is the same under both here; only its timing differs."
+                   if same else "Total carry differs between the two methods as well as its timing.")  # fmt: skip
+        _footnote(fig, f"LP-class distributions by calendar year. {verdict} Table: waterfall_comparison.csv")
         return _save(fig, path)
 
 
@@ -593,12 +595,13 @@ def chart_carry_timing(timeline: pd.DataFrame, result: FundResult, path: Path) -
     european, american = timeline["european_cumulative_carry"], timeline["american_cumulative_carry"]
 
     with plt.rc_context(_style()):
+        top = float(max(european.max(), american.max()))
+        same = abs(float(european.iloc[-1]) - float(american.iloc[-1])) < 0.06 * max(top, 1e-9)
         fig, ax = _figure(
-            "Carry timing: the same carry, years apart",
+            "Carry timing: the same carry, years apart" if same else "Carry timing: deal-by-deal pays the GP earlier",
             "Cumulative carried interest paid to the GP under each waterfall",
             right=0.90,
         )
-        top = float(max(european.max(), american.max()))
         ax.set_xlim(float(x.min()), float(x.max()) + 0.1)
         ax.set_ylim(0, top * 1.14)
         _grid(ax)
