@@ -457,7 +457,12 @@ def _cashflows_sheet(wb: Workbook, result: FundResult) -> int:
     unit = f"{fund.currency} {fund.unit}"
     _title(ws, "Quarterly fund cash flows", f"Values written by the Python engine ({unit}); re-run `pefund excel` to "
                                             "refresh. These feed the live waterfall sheets.")  # fmt: skip
-    _put(ws, "A3", "Fee check recomputes the gross fee as basis x rate / 4. Net fee = gross fee - offset (formula).", "note")
+    _put(
+        ws,
+        "A3",
+        "Fee check recomputes the gross fee as basis x rate / 4. Net fee = gross fee - offset (formula).",
+        "note",
+    )
     groups = {"D": "Portfolio", "I": "Management fee", "O": "Other costs", "Q": "Funding", "T": "Distributable cash"}
     for column, label in groups.items():
         _put(ws, f"{column}{ROW0 - 2}", label, "section")
@@ -508,7 +513,12 @@ def _dbd_inputs_sheet(wb: Workbook, american: FundResult) -> tuple[str, str, str
     k = len(kinds)
     c0, w0 = 3, 3 + k + 1
     _put(ws, f"{get_column_letter(c0)}{ROW0 - 2}", "LP capital called by purpose", "section")
-    _put(ws, f"{get_column_letter(w0)}{ROW0 - 2}", "Eligibility weight (0 = not yet eligible, 1 = fully eligible)", "section")
+    _put(
+        ws,
+        f"{get_column_letter(w0)}{ROW0 - 2}",
+        "Eligibility weight (0 = not yet eligible, 1 = fully eligible)",
+        "section",
+    )
     _header(ws, ROW0 - 1, ["Quarter", "Date", *kinds], height=54)
     _header(ws, ROW0 - 1, kinds, start_col=w0, height=54)
     capital, weights = american.lp_capital_by_kind, american.eligibility
@@ -676,9 +686,7 @@ def _waterfall_sheet(wb: Workbook, sheet: str, n: int, *, american: bool, unit: 
         )
         f["cb_recv"] = f"=IF({is_final},{summary['payable']},0)"
         f["lp_incl"] = f"={WF['lp']}{r}+{WF['cb_recv']}{r}"
-        f["gp_cash"] = (
-            f"={WF['gp']}{r}-{WF['escrowed']}{r}+IF({is_final},{summary['released']}-{summary['from_gp']},0)"
-        )
+        f["gp_cash"] = f"={WF['gp']}{r}-{WF['escrowed']}{r}+IF({is_final},{summary['released']}-{summary['from_gp']},0)"
 
         _put(ws, f"{WF['q']}{r}", q, "python", INDEX)
         for name, formula in f.items():
@@ -748,7 +756,9 @@ def _waterfall_sheet(wb: Workbook, sheet: str, n: int, *, american: bool, unit: 
     ws.sheet_properties.tabColor = "ED7D31" if american else "2E75B6"
     ws.conditional_formatting.add(
         f"{WF['check']}{ROW0}:{WF['check']}{last}",
-        CellIsRule(operator="notBetween", formula=["-0.000001", "0.000001"], font=Font(name=FONT, color="FF0000", bold=True)),
+        CellIsRule(
+            operator="notBetween", formula=["-0.000001", "0.000001"], font=Font(name=FONT, color="FF0000", bold=True)
+        ),
     )
 
 
@@ -762,7 +772,9 @@ def _pick(column: str, row: int | str) -> str:
 
 def _flows_sheet(wb: Workbook, n: int, unit: str) -> int:
     ws = wb.create_sheet(S_FLOWS)
-    _title(ws, "LP and GP cash flows - live formulas", f"Quarterly flows under the waterfall selected on Inputs ({unit}).")
+    _title(
+        ws, "LP and GP cash flows - live formulas", f"Quarterly flows under the waterfall selected on Inputs ({unit})."
+    )
     groups = {"D": "Limited partners", "K": "Waterfall tiers (selected waterfall)", "Q": "General partner",
               "V": "Portfolio"}  # fmt: skip
     for column, label in groups.items():
@@ -902,7 +914,12 @@ def _returns_sheet(wb: Workbook, bundle: dict[str, Any], last: int) -> dict[str,
     line("gp_commit_profit", "GP commitment profit", f"={total('gp_dist')}-{total('gp_called')}", MONEY)
     line("gp_total", "GP and manager total economics", f"={at('fees')}+{at('carry_net')}+{at('gp_commit_profit')}",
          MONEY, "Fees + carry + profit on the GP commitment.")  # fmt: skip
-    line("lp_share", "LP share of gross profit", f"=IF({at('gross_profit')}<>0,{at('net_profit')}/{at('gross_profit')},0)", PCT)
+    line(
+        "lp_share",
+        "LP share of gross profit",
+        f"=IF({at('gross_profit')}<>0,{at('net_profit')}/{at('gross_profit')},0)",
+        PCT,
+    )
     line("gp_share", "GP and manager share of gross profit",
          f"=IF({at('gross_profit')}<>0,{at('gp_total')}/{at('gross_profit')},0)", PCT)  # fmt: skip
     line("cost_share", "Expenses share of gross profit",
@@ -958,9 +975,14 @@ def _annual_sheet(wb: Workbook, result: FundResult, last: int) -> tuple[int, int
         _put(ws, f"I{row}", "=" + sumifs("fee", row), "formula", MONEY)
         _put(ws, f"J{row}", "=" + sumifs("gross", row), "formula", MONEY)
     end = first + len(years) - 1
-    _total_row(ws, end + 1, first, end, {c: MONEY for c in "BCDEFGHIJ"})
-    _put(ws, f"A{end + 3}", "Tiers exclude any clawback, which is paid by the GP at liquidation and shown on Returns.", "note")
-    _widths(ws, {"A": 9} | {c: 15 for c in "BCDEFGHIJ"})
+    _total_row(ws, end + 1, first, end, dict.fromkeys("BCDEFGHIJ", MONEY))
+    _put(
+        ws,
+        f"A{end + 3}",
+        "Tiers exclude any clawback, which is paid by the GP at liquidation and shown on Returns.",
+        "note",
+    )
+    _widths(ws, {"A": 9} | dict.fromkeys("BCDEFGHIJ", 15))
     ws.freeze_panes = "B6"
     return first, end
 
@@ -996,11 +1018,11 @@ def _lp_accounts_sheet(wb: Workbook, bundle: dict[str, Any], investors: tuple[in
         _put(ws, f"K{row}", record["nav"], "python", MONEY)
         _put(ws, f"L{row}", record["tvpi"], "python", MULT)
     end = 6 + len(interim) - 1
-    _total_row(ws, end + 1, 6, end, {c: MONEY for c in "BDEFIJK"})
+    _total_row(ws, end + 1, 6, end, dict.fromkeys("BDEFIJK", MONEY))
     _put(ws, f"C{end + 1}", f"=SUM(C6:C{end})", "formula", PCT, FILL_TOTAL, bold=True)
     _put(ws, f"A{end + 3}", "Every LP invests on the same terms, so each takes its commitment share of every flow; "
                             "all LPs therefore share the same DPI and IRR.", "note")  # fmt: skip
-    _widths(ws, {"A": 40} | {c: 14 for c in "BCDEFGHIJKL"})
+    _widths(ws, {"A": 40} | dict.fromkeys("BCDEFGHIJKL", 14))
     del last_inv
 
 
@@ -1022,8 +1044,12 @@ def _bridge_sheet(wb: Workbook, bundle: dict[str, Any]) -> None:
     ws = wb.create_sheet(S_BRIDGE)
     result: FundResult = bundle["result"]
     unit = f"{result.config.fund.currency} {result.config.fund.unit}"
-    _title(ws, "Gross-to-net bridge and value creation", f"Values from the Python engine at the configured terms ({unit}).")
-    _put(ws, "A4", "Gross-to-net bridge: each step re-measures LP returns with one more fund cost switched on", "section")
+    _title(
+        ws, "Gross-to-net bridge and value creation", f"Values from the Python engine at the configured terms ({unit})."
+    )
+    _put(
+        ws, "A4", "Gross-to-net bridge: each step re-measures LP returns with one more fund cost switched on", "section"
+    )
     bridge = bundle["bridge"][["step", "irr_after", "irr_impact_bps", "multiple_after", "multiple_impact"]]
     end = _write_table(ws, 5, bridge, ["Step", "IRR after step", "IRR impact (bps)", "Multiple after step",
                                        "Multiple impact"], [None, PCT, BPS, MULT, MULT])  # fmt: skip
@@ -1081,7 +1107,7 @@ def _scenarios_sheet(wb: Workbook, bundle: dict[str, Any]) -> tuple[int, int] | 
         _put(ws, f"N{row}", f"=(F{row}-$F$6)*10000", "formula", BPS)
         _put(ws, f"O{row}", f"=G{row}-$G$6", "formula", MULT)
         ws.row_dimensions[row].height = 30
-    _widths(ws, {"A": 26, "B": 70, "C": 12} | {c: 14 for c in "DEFGHIJKLMNO"})
+    _widths(ws, {"A": 26, "B": 70, "C": 12} | dict.fromkeys("DEFGHIJKLMNO", 14))
     ws.freeze_panes = "B6"
     return 6, end
 
@@ -1230,7 +1256,12 @@ def _checks_sheet(wb: Workbook, bundle: dict[str, Any], last: int, refs: dict[st
     _put(ws, f"A{row}", "Levers unchanged since the Python run?", "bold")
     _put(ws, f"B{row}", f'=IF(COUNTIF(D{lever_first}:D{lever_last},"Changed")=0,"Yes","No")', "formula", bold=True)
     unchanged = f"$B${row}"
-    _put(ws, f"C{row}", "If No, differences below are expected: Excel has recalculated, the Python values have not.", "note")
+    _put(
+        ws,
+        f"C{row}",
+        "If No, differences below are expected: Excel has recalculated, the Python values have not.",
+        "note",
+    )
 
     row += 2
     _put(ws, f"A{row}", "Reconciliation", "section")
@@ -1256,7 +1287,10 @@ def _checks_sheet(wb: Workbook, bundle: dict[str, Any], last: int, refs: dict[st
             ws[f"{column}{row}"].fill = FILL_SUB
         row += 1
 
-    for sheet, kind, label in ((S_EU, "european", "Whole-of-fund waterfall"), (S_DBD, "american", "Deal-by-deal waterfall")):
+    for sheet, kind, label in (
+        (S_EU, "european", "Whole-of-fund waterfall"),
+        (S_DBD, "american", "Deal-by-deal waterfall"),
+    ):
         run: FundResult = runs[kind]
         totals = run.totals
         heading(label)
@@ -1344,7 +1378,12 @@ def _dashboard_sheet(wb: Workbook, bundle: dict[str, Any], refs: dict[str, str],
     fund = result.config.fund
     unit = f"{fund.currency} {fund.unit}"
     _put(ws, "A1", fund.name, "title")
-    _put(ws, "A2", f"Fund economics dashboard - liquidation basis, {unit}. KPIs and the first two charts are live.", "note")
+    _put(
+        ws,
+        "A2",
+        f"Fund economics dashboard - liquidation basis, {unit}. KPIs and the first two charts are live.",
+        "note",
+    )
     ws.row_dimensions[1].height = 24
     tiles = [
         ("Net IRR", "net_irr", PCT), ("Net TVPI", "tvpi", MULT), ("Gross IRR", "gross_irr", PCT),

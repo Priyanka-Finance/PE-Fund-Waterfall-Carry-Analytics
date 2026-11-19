@@ -22,7 +22,9 @@ SCENARIO_FILE = "configs/scenarios.yaml"
 
 @pytest.fixture(scope="module")
 def bundle(base_config):
-    return build_bundle(base_config, sc.load_scenarios(SCENARIO_FILE), monte_carlo=MonteCarloSettings(n_sims=120, seed=3))
+    return build_bundle(
+        base_config, sc.load_scenarios(SCENARIO_FILE), monte_carlo=MonteCarloSettings(n_sims=120, seed=3)
+    )
 
 
 @pytest.fixture(scope="module")

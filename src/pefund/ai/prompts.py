@@ -60,7 +60,7 @@ def commentary_prompt(pack: dict[str, Any]) -> str:
 
 
 def repair_prompt(pack: dict[str, Any], draft: str, problems: list[dict[str, str]]) -> str:
-    listed = "\n".join(f"- {item['token']!r} in: \"...{item['context']}...\"" for item in problems[:25])
+    listed = "\n".join(f'- {item["token"]!r} in: "...{item["context"]}..."' for item in problems[:25])
     return (
         "Your draft below contains figures or dates that could not be matched to FACTS. Rewrite the draft so that "
         "every figure and date comes from FACTS at the precision FACTS gives. Remove any statement you cannot "

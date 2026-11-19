@@ -121,7 +121,10 @@ def value_split(result: FundResult, as_of: dt.date | int | None = None) -> pd.Da
     fees = float(a["mgmt_fee_net"][window].sum())
     expenses = float(a["expenses"][window].sum() + a["line_interest"][window].sum() + a["line_interest_accrued"][q])
     carry = float(
-        a["gp_carry"][window].sum() - a["clawback_paid"][window].sum() + a["accrued_carry"][q] - a["clawback_exposure"][q]
+        a["gp_carry"][window].sum()
+        - a["clawback_paid"][window].sum()
+        + a["accrued_carry"][q]
+        - a["clawback_exposure"][q]
     )
     rows = [
         ("LP net profit", lp_profit, "LP"),

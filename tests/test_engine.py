@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
-from conftest import make_config, one_deal
 
+from conftest import make_config, one_deal
 from pefund import ConfigError, run_fund
 
 FEATURE_SETS = {
@@ -118,7 +118,9 @@ def test_american_engine_equals_per_deal_ledgers_on_random_portfolios(seed):
         deals.append(
             {
                 "name": f"Deal {i}",
-                "investments": [{"date": f"{2021 + year}-{3 * quarter + 1:02d}-15", "amount": float(rng.uniform(10, 60))}],
+                "investments": [
+                    {"date": f"{2021 + year}-{3 * quarter + 1:02d}-15", "amount": float(rng.uniform(10, 60))}
+                ],
                 "exit_date": f"{2021 + exit_year}-{3 * exit_quarter + 1:02d}-15",
                 "gross_moic": float(rng.choice([0.0, 0.5, 1.0, 1.5, 2.5, 4.0])),
             }
@@ -138,7 +140,8 @@ def test_every_dollar_of_proceeds_is_accounted_for(base_config, name):
     result = run_fund(base_config.with_values(FEATURE_SETS[name]))
     a = result.arrays
     paid_out = (
-        a["lp_distributions"].sum() - a["clawback_paid"].sum()  # clawback is GP money, not proceeds
+        a["lp_distributions"].sum()
+        - a["clawback_paid"].sum()  # clawback is GP money, not proceeds
         + a["gp_carry"].sum()
         + a["gp_commit_distributions"].sum()
         + a["netted_from_proceeds"].sum()

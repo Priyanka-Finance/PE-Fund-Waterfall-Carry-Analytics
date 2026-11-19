@@ -57,7 +57,11 @@ ALWAYS_ALLOWED = (0.0, 1.0, 100.0)
 _FILLER = r"[^.;:%\dx]{0,28}?"
 LABELLED_METRICS = [
     (re.compile(rf"\bnet IRR\b{_FILLER}(?P<number>[-−–]?\d+(?:\.\d+)?)\s?%", re.IGNORECASE), "net_irr", "net IRR"),
-    (re.compile(rf"\bgross IRR\b{_FILLER}(?P<number>[-−–]?\d+(?:\.\d+)?)\s?%", re.IGNORECASE), "gross_irr", "gross IRR"),
+    (
+        re.compile(rf"\bgross IRR\b{_FILLER}(?P<number>[-−–]?\d+(?:\.\d+)?)\s?%", re.IGNORECASE),
+        "gross_irr",
+        "gross IRR",
+    ),
     (re.compile(rf"\bTVPI\b{_FILLER}(?P<number>\d+(?:\.\d+)?)\s?x\b", re.IGNORECASE), "tvpi", "TVPI"),
     (re.compile(rf"\bMOIC\b{_FILLER}(?P<number>\d+(?:\.\d+)?)\s?x\b", re.IGNORECASE), "moic", "MOIC"),
     (re.compile(rf"\bDPI\b{_FILLER}(?P<number>\d+(?:\.\d+)?)\s?x\b", re.IGNORECASE), "dpi", "DPI"),

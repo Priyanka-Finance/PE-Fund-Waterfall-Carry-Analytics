@@ -493,12 +493,9 @@ class FundConfig:
         unknown = sorted(set(data) - set(allowed))
         _require(not unknown, f"Unknown top-level section(s) {unknown}. Allowed: {allowed}")
         kwargs: dict[str, Any] = {
-            name: _build(section_cls, copy.deepcopy(data.get(name)), name)
-            for name, section_cls in _SECTIONS.items()
+            name: _build(section_cls, copy.deepcopy(data.get(name)), name) for name, section_cls in _SECTIONS.items()
         }
-        kwargs["investors"] = [
-            _build(Investor, copy.deepcopy(i), "investors") for i in (data.get("investors") or [])
-        ]
+        kwargs["investors"] = [_build(Investor, copy.deepcopy(i), "investors") for i in (data.get("investors") or [])]
         kwargs["deals"] = [_build(Deal, copy.deepcopy(d), "deals") for d in (data.get("deals") or [])]
         config = cls(**kwargs)
         config.validate()

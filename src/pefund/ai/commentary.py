@@ -40,7 +40,11 @@ class CommentaryResult:
     def to_markdown(self, title: str | None = None) -> str:
         """Commentary with a title and a provenance footer."""
         fund = self.fact_pack["fund"]["name"]
-        writer = "deterministic writer (no language model)" if self.provider == "offline" else f"{self.provider} / {self.model}"
+        writer = (
+            "deterministic writer (no language model)"
+            if self.provider == "offline"
+            else f"{self.provider} / {self.model}"
+        )
         lines = [f"# {title or 'Fund commentary: ' + fund}", "", self.text, "", "---", ""]
         lines.append(f"*Written by: {writer}. Generated {dt.date.today():%d %B %Y}.*  ")
         lines.append(f"*Numeric grounding: {self.grounding.summary()}*  ")

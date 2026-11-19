@@ -43,4 +43,9 @@ src = ["src", "tests", "app"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "SIM", "C4"]
-ignore = ["SIM108"]
+# E501: line length is the formatter's job; long f-strings and aligned tables are left alone.
+# SIM108: an explicit if/else is clearer than a long ternary in the numerical code.
+ignore = ["E501", "SIM108"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["pefund", "conftest"]

@@ -19,7 +19,11 @@ from openpyxl import load_workbook
 from ..config import ConfigError
 
 INPUTS_SHEET, DEALS_SHEET, INVESTORS_SHEET = "Inputs", "Deals", "Investors"
-_INTEGER_KEYS = {"subscription_line.quarters_outstanding", "valuation.hold_at_cost_quarters", "shocks.hold_shift_quarters"}
+_INTEGER_KEYS = {
+    "subscription_line.quarters_outstanding",
+    "valuation.hold_at_cost_quarters",
+    "shocks.hold_shift_quarters",
+}
 
 
 def _clean(value: Any) -> Any:

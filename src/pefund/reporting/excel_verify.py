@@ -46,7 +46,9 @@ def recalculate(path: str | Path, out_path: str | Path | None = None, timeout: i
         completed = subprocess.run(command, capture_output=True, text=True, timeout=timeout, check=False)
         produced = Path(tmp) / source.name
         if not produced.exists():
-            raise RuntimeError(f"LibreOffice did not produce a workbook: {completed.stderr.strip() or completed.stdout}")
+            raise RuntimeError(
+                f"LibreOffice did not produce a workbook: {completed.stderr.strip() or completed.stdout}"
+            )
         shutil.copyfile(produced, target)
     return target
 

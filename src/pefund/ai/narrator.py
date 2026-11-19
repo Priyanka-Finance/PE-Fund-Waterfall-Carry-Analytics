@@ -129,7 +129,9 @@ def _executive_summary(p: dict[str, Any], f: _Format) -> str:
     ]
     if (wf["carry_net_of_clawback"] or 0) > 0:
         clawback = (
-            f", after returning {f.money(wf['clawback_paid'])} through the clawback" if (wf["clawback_paid"] or 0) > 0 else ""
+            f", after returning {f.money(wf['clawback_paid'])} through the clawback"
+            if (wf["clawback_paid"] or 0) > 0
+            else ""
         )
         lines.append(
             f"The GP earns carried interest of {f.money(wf['carry_net_of_clawback'])}{clawback}, "
@@ -158,7 +160,11 @@ def _executive_summary(p: dict[str, Any], f: _Format) -> str:
 def _waterfall(p: dict[str, Any], f: _Format) -> str:
     terms, perf, wf = p["terms"], p["performance_at_liquidation"], p["waterfall"]
     european = terms["waterfall_type"].startswith("whole")
-    compounding = {"annual": "compounded annually", "quarterly": "compounded quarterly", "simple": "accrued without compounding"}
+    compounding = {
+        "annual": "compounded annually",
+        "quarterly": "compounded quarterly",
+        "simple": "accrued without compounding",
+    }
     paragraphs = []
 
     tiers = [f"LPs paid in {f.money(perf['lp_paid_in'])} over the life of the fund."]
@@ -176,7 +182,11 @@ def _waterfall(p: dict[str, Any], f: _Format) -> str:
         tiers.append("Nothing was left to pay the preferred return in tier 2.")
     if (wf["carry_distributed"] or 0) > 0:
         if (wf["tier3_gp_catch_up"] or 0) > 0:
-            pace = "every dollar" if terms["gp_catch_up_pct"] >= 100 else f"{f.rate(terms['gp_catch_up_pct'])} of each dollar"
+            pace = (
+                "every dollar"
+                if terms["gp_catch_up_pct"] >= 100
+                else f"{f.rate(terms['gp_catch_up_pct'])} of each dollar"
+            )
             tiers.append(
                 f"Tier 3 gave the GP a catch-up of {f.money(wf['tier3_gp_catch_up'])}; it takes {pace} after the "
                 f"hurdle until its carry equals {f.rate(terms['carried_interest_pct'])} of all profit distributed."
@@ -231,8 +241,7 @@ def _waterfall(p: dict[str, Any], f: _Format) -> str:
                     f"{f.money(event['tier4_to_gp'])} to the GP"
                 )
             timing.append(
-                f"In that quarter the LP class had {f.money(event['lp_distributable'])} to distribute: "
-                f"{_join(parts)}."
+                f"In that quarter the LP class had {f.money(event['lp_distributable'])} to distribute: {_join(parts)}."
             )
         paragraphs.append(" ".join(timing))
 
@@ -266,10 +275,12 @@ def _drivers(p: dict[str, Any], f: _Format) -> str:
         f"{_plural(n, 'investment')} costing {f.money(perf['total_invested'])}. {top['name']} was the largest "
         f"contributor, with a gain of {f.money(top['gain'])} ({f.pct(top['share_of_total_gain_pct'])} of the total) "
         f"on a {f.multiple(top['gross_moic_x'])} gross multiple; "
-        + (f"the top three deals produced {f.pct(portfolio['top3_share_of_gain_pct'])} of the gain."
-           if (portfolio["top3_share_of_gain_pct"] or 0) <= 100 else
-           f"the top three deals earned more than the fund's whole net gain "
-           f"({f.pct(portfolio['top3_share_of_gain_pct'])} of it), the rest being given back by the losers."),
+        + (
+            f"the top three deals produced {f.pct(portfolio['top3_share_of_gain_pct'])} of the gain."
+            if (portfolio["top3_share_of_gain_pct"] or 0) <= 100
+            else f"the top three deals earned more than the fund's whole net gain "
+            f"({f.pct(portfolio['top3_share_of_gain_pct'])} of it), the rest being given back by the losers."
+        ),
         _sentence(
             f"{_spelled(portfolio['deals_at_2x_or_better'], 'deal')} returned at least twice "
             f"{'its' if portfolio['deals_at_2x_or_better'] == 1 else 'their'} cost."
@@ -317,9 +328,7 @@ def _drivers(p: dict[str, Any], f: _Format) -> str:
         if direct and (direct["amount"] or 0) != 0:
             share = f" ({f.pct(direct['share_of_gain_pct'])})" if all_positive else ""
             verb = "add" if direct["amount"] > 0 else "lose"
-            sentence += (
-                f"; the growth-equity positions, modelled on a direct multiple, {verb} {f.size(direct['amount'])}{share}"
-            )
+            sentence += f"; the growth-equity positions, modelled on a direct multiple, {verb} {f.size(direct['amount'])}{share}"
         lines.append(sentence + ".")
         if added and added[0]["driver"] == "EBITDA growth":
             if any(d["driver"] == "Multiple expansion / (contraction)" for d in removed):
@@ -374,7 +383,9 @@ def _economics(p: dict[str, Any], f: _Format) -> str:
             f"{f.money(by_name['Partnership expenses']['amount'])}."
         )
     offsets = (
-        f", after {f.money(costs['fee_offsets'])} of portfolio-company fee offsets" if (costs["fee_offsets"] or 0) > 0 else ""
+        f", after {f.money(costs['fee_offsets'])} of portfolio-company fee offsets"
+        if (costs["fee_offsets"] or 0) > 0
+        else ""
     )
     lines.append(
         f"Management fees total {f.money(costs['management_fees'])}, "
@@ -428,7 +439,9 @@ def _comparison(p: dict[str, Any], f: _Format) -> str:
             f"{f.size(c['carry_present_value_uplift_for_gp'])}."
         )
     if (am["clawback_paid"] or 0) > 0:
-        lines.append(f"On these outcomes deal-by-deal ends with the GP repaying {f.money(am['clawback_paid'])} through the clawback.")
+        lines.append(
+            f"On these outcomes deal-by-deal ends with the GP repaying {f.money(am['clawback_paid'])} through the clawback."
+        )
     elif (am["peak_clawback_exposure"] or 0) > 0:
         lines.append(
             f"The risk LPs take in exchange is over-distribution: at its peak the GP held "
@@ -475,14 +488,16 @@ def _scenarios(p: dict[str, Any], f: _Format) -> str:
         clawed = max(scenarios, key=lambda s: s["clawback_paid"] or 0)
         if (clawed["clawback_paid"] or 0) > 0:
             text = (
-                f"The \"{clawed['name']}\" scenario is the one that triggers the clawback: the GP repays "
+                f'The "{clawed["name"]}" scenario is the one that triggers the clawback: the GP repays '
                 f"{f.money(clawed['clawback_paid'])}"
             )
             if (clawed["lp_shortfall_from_after_tax_cap"] or 0) > 0:
                 text += (
                     f", and the after-tax limit leaves LPs {f.money(clawed['lp_shortfall_from_after_tax_cap'])} short"
                 )
-            blocks.append(text + ". The same deals under whole-of-fund terms pay no early carry, so there is nothing to recover.")
+            blocks.append(
+                text + ". The same deals under whole-of-fund terms pay no early carry, so there is nothing to recover."
+            )
 
     sensitivity = p.get("sensitivity") or {}
     rows = sensitivity.get("one_at_a_time") or []
@@ -555,7 +570,11 @@ def _risks(p: dict[str, Any], f: _Format) -> str:
         )
     mc = p.get("monte_carlo")
     if mc and (mc["probability_of_material_clawback_deal_by_deal_pct"] or 0) >= 1:
-        cap = " and the after-tax limit means LPs would not recover all of it" if terms["clawback_after_tax_limit"] else ""
+        cap = (
+            " and the after-tax limit means LPs would not recover all of it"
+            if terms["clawback_after_tax_limit"]
+            else ""
+        )
         bullets.append(
             f"**Clawback under deal-by-deal terms.** A material clawback arises in "
             f"{f.pct(mc['probability_of_material_clawback_deal_by_deal_pct'])} of simulated outcomes{cap}. "
@@ -632,7 +651,8 @@ def explain_distribution(result: FundResult, as_of: dt.date | int | None = None)
     ]  # fmt: skip
     if cu_gp + cu_lp > 1e-9:
         lines.append(
-            f"3. GP catch-up: {money(cu_gp)} to the GP" + (f" and {money(cu_lp)} to LPs" if cu_lp > 1e-9 else "")
+            f"3. GP catch-up: {money(cu_gp)} to the GP"
+            + (f" and {money(cu_lp)} to LPs" if cu_lp > 1e-9 else "")
             + f", moving the GP towards {cfg.waterfall.carry_rate:.0%} of profit distributed to date."
         )
     else:
@@ -646,7 +666,11 @@ def explain_distribution(result: FundResult, as_of: dt.date | int | None = None)
         lines.append("4. Residual split: no cash reached this tier.")
     lines.append(
         f"Result: LPs received {money(t1 + t2 + cu_lp + sp_lp)} and the GP {money(cu_gp + sp_gp)} of carried interest"
-        + (f", of which {money(float(a['carry_escrowed'][q]))} was placed in escrow." if a["carry_escrowed"][q] > 1e-9 else ".")
+        + (
+            f", of which {money(float(a['carry_escrowed'][q]))} was placed in escrow."
+            if a["carry_escrowed"][q] > 1e-9
+            else "."
+        )
     )
     if a["clawback_paid"][q] > 1e-9:
         lines.append(f"At liquidation the GP also returned {money(float(a['clawback_paid'][q]))} through the clawback.")
@@ -669,8 +693,10 @@ def lookup_facts(pack: dict[str, Any], question: str, limit: int = 12) -> str:
     scored = []
     for path, value in flatten_numbers(pack).items():
         tokens = set(path.replace("[", "_").replace("]", "_").replace(".", "_").split("_"))
-        score = len(expanded & tokens)
-        if score:
+        matches = len(expanded & tokens)
+        if matches:
+            # Headline figures first: list entries (one deal, one quarter, one scenario) rank below totals.
+            score = 10 * matches - (6 if "[" in path else 0)
             scored.append((score, -len(path), path, value))
     if not scored:
         return "Offline mode found no figure matching that question. Set an API key to ask free-form questions."

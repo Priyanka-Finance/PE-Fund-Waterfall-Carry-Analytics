@@ -174,13 +174,21 @@ def build_fact_pack(bundle: dict[str, Any]) -> dict[str, Any]:
             "subscription_line_interest": _num(totals["total_line_interest"]),
         },
         "gross_to_net_bridge": [
-            {"step": row["step"], "irr_after_pct": _pct(row["irr_after"]), "irr_impact_bps": _num(row["irr_impact_bps"], 0),
-             "multiple_after_x": _num(row["multiple_after"], 2)}
+            {
+                "step": row["step"],
+                "irr_after_pct": _pct(row["irr_after"]),
+                "irr_impact_bps": _num(row["irr_impact_bps"], 0),
+                "multiple_after_x": _num(row["multiple_after"], 2),
+            }
             for _, row in bundle["bridge"].iterrows()
         ],  # fmt: skip
         "split_of_gross_profit": [
-            {"component": row["component"], "recipient": row["recipient"], "amount": _num(row["amount"]),
-             "share_pct": _pct(row["share_of_gross_profit"])}
+            {
+                "component": row["component"],
+                "recipient": row["recipient"],
+                "amount": _num(row["amount"]),
+                "share_pct": _pct(row["share_of_gross_profit"]),
+            }
             for _, row in bundle["value_split"].iterrows()
         ],  # fmt: skip
         "gp_economics": {

@@ -28,8 +28,8 @@ import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 from matplotlib.colors import LinearSegmentedColormap  # noqa: E402
 from matplotlib.patches import PathPatch  # noqa: E402
-from matplotlib.ticker import MultipleLocator  # noqa: E402
 from matplotlib.path import Path as MplPath  # noqa: E402
+from matplotlib.ticker import MultipleLocator  # noqa: E402
 
 from ..fund import FundResult  # noqa: E402
 
@@ -225,8 +225,13 @@ def _bar(ax, lo: float, hi: float, centre: float, thickness: float, colour: str,
              MplPath.CURVE3, MplPath.CURVE3, MplPath.LINETO, MplPath.CLOSEPOLY]  # fmt: skip
     vertices = [(y, x) for x, y in points] if horizontal else points
     ax.add_patch(
-        PathPatch(MplPath(vertices, codes), facecolor=colour, edgecolor=SURFACE if gap else "none",
-                  linewidth=2.0 * PT if gap else 0.0, zorder=BAR_Z)  # fmt: skip
+        PathPatch(
+            MplPath(vertices, codes),
+            facecolor=colour,
+            edgecolor=SURFACE if gap else "none",
+            linewidth=2.0 * PT if gap else 0.0,
+            zorder=BAR_Z,
+        )  # fmt: skip
     )
 
 
@@ -285,7 +290,9 @@ def chart_j_curve(result: FundResult, path: Path) -> Path:
         ax.plot(x_quarters, cumulative, color=AQUA, zorder=LINE_Z)
 
         trough = int(np.argmin(cumulative))
-        ax.plot(x_quarters[trough], cumulative[trough], "o", ms=8 * PT, color=AQUA, mec=SURFACE, mew=2 * PT, zorder=MARKER_Z)
+        ax.plot(
+            x_quarters[trough], cumulative[trough], "o", ms=8 * PT, color=AQUA, mec=SURFACE, mew=2 * PT, zorder=MARKER_Z
+        )
         ax.annotate(
             f"Deepest point {fmt_money(cumulative[trough], currency, unit)}, {result.dates[trough]:%b %Y}",
             (x_quarters[trough], cumulative[trough]), xytext=(10, -9), textcoords="offset points",
@@ -434,11 +441,23 @@ def chart_gross_to_net(bridge: pd.DataFrame, path: Path) -> Path:
             after = float(row["irr_after"])
             colour = RED if after < level else BLUE
             _bar(ax, level, after, i, thickness, colour)
-            ax.plot([i - 1 + thickness / 2, i - thickness / 2], [level, level], color=BASELINE, lw=1.0 * PT, zorder=REFERENCE_Z)
+            ax.plot(
+                [i - 1 + thickness / 2, i - thickness / 2],
+                [level, level],
+                color=BASELINE,
+                lw=1.0 * PT,
+                zorder=REFERENCE_Z,
+            )
             ax.text(i, max(level, after) + offset, fmt_bps(row["irr_impact_bps"]), ha="center", va="bottom",
                     fontsize=9.5, color=INK)  # fmt: skip
             level = after
-        ax.plot([n - 2 + thickness / 2, n - 1 - thickness / 2], [level, level], color=BASELINE, lw=1.0 * PT, zorder=REFERENCE_Z)
+        ax.plot(
+            [n - 2 + thickness / 2, n - 1 - thickness / 2],
+            [level, level],
+            color=BASELINE,
+            lw=1.0 * PT,
+            zorder=REFERENCE_Z,
+        )
         _bar(ax, 0.0, net, n - 1, thickness, TOTAL)
         ax.text(n - 1, net + offset, fmt_pct(net), ha="center", va="bottom", fontsize=10, fontweight="bold")
         ax.set_xticks(range(n))
@@ -448,7 +467,9 @@ def chart_gross_to_net(bridge: pd.DataFrame, path: Path) -> Path:
         if (steps["irr_impact"] > 0).any():
             entries.append(("Adds to the LP return", BLUE, "bar"))
         _legend(fig, entries)
-        _footnote(fig, "Each step re-measures the LPs' IRR with one more cost switched on. Table: gross_to_net_bridge.csv")
+        _footnote(
+            fig, "Each step re-measures the LPs' IRR with one more cost switched on. Table: gross_to_net_bridge.csv"
+        )
         return _save(fig, path)
 
 
@@ -481,7 +502,9 @@ def chart_value_split(split: pd.DataFrame, result: FundResult, path: Path) -> Pa
         ax.set_yticklabels([f"{c}\n({r})" for c, r in zip(data["component"], data["recipient"], strict=True)],
                            fontsize=9.5, linespacing=1.4)  # fmt: skip
         ax.xaxis.set_major_formatter(lambda v, _: fmt_money(v, currency, unit))
-        _footnote(fig, "Carried interest is net of any clawback. The five lines sum to gross profit. Table: value_split.csv")
+        _footnote(
+            fig, "Carried interest is net of any clawback. The five lines sum to gross profit. Table: value_split.csv"
+        )
         return _save(fig, path)
 
 
@@ -514,9 +537,8 @@ def chart_sensitivity(grid: pd.DataFrame, path: Path, title: str | None = None, 
                 # 2px surface gap between cells instead of borders.
                 ax.add_patch(plt.Rectangle((j - 0.5, i - 0.5), 1, 1, facecolor=cmap(shade), edgecolor=SURFACE,
                                            linewidth=2.0 * PT))  # fmt: skip
-                is_base = (
-                    np.isclose(grid.columns[j], attrs.get("x_base", np.nan))
-                    and np.isclose(grid.index[i], attrs.get("y_base", np.nan))
+                is_base = np.isclose(grid.columns[j], attrs.get("x_base", np.nan)) and np.isclose(
+                    grid.index[i], attrs.get("y_base", np.nan)
                 )
                 ax.text(j, i, _format_value(value, unit, currency, money_unit), ha="center", va="center",
                         fontsize=9.5, color="#ffffff" if shade > 0.45 else INK,
@@ -528,13 +550,18 @@ def chart_sensitivity(grid: pd.DataFrame, path: Path, title: str | None = None, 
         ax.set_ylim(rows - 0.5, -0.5)
         ax.spines["bottom"].set_visible(False)
         ax.set_xticks(range(cols))
-        ax.set_xticklabels(_axis_values(grid.columns, attrs.get("x_unit", "number"), attrs.get("x") in SIGNED_PARAMETERS))
+        ax.set_xticklabels(
+            _axis_values(grid.columns, attrs.get("x_unit", "number"), attrs.get("x") in SIGNED_PARAMETERS)
+        )
         ax.set_yticks(range(rows))
         ax.set_yticklabels(_axis_values(grid.index, attrs.get("y_unit", "number"), attrs.get("y") in SIGNED_PARAMETERS))
         ax.set_xlabel(attrs.get("x_label", ""), labelpad=8)
         ax.set_ylabel(attrs.get("y_label", ""), labelpad=8)
         ax.tick_params(labelsize=9.5)
-        _footnote(fig, "Every cell is a full re-run of the fund model. Darker = higher. Table: sensitivity CSV of the same name")
+        _footnote(
+            fig,
+            "Every cell is a full re-run of the fund model. Darker = higher. Table: sensitivity CSV of the same name",
+        )
         return _save(fig, path)
 
 
@@ -753,7 +780,9 @@ def chart_value_creation(drivers: pd.DataFrame, result: FundResult, path: Path) 
             _bar(ax, lo, hi, i, thickness, BLUE if hi >= lo else RED)
             ax.text(i, max(lo, hi) + offset, f"{fmt_money(row['amount'], currency, unit)}\n{fmt_pct(row['share_of_gain'], 0)}",
                     ha="center", va="bottom", fontsize=9, color=INK, linespacing=1.35)  # fmt: skip
-            ax.plot([i + thickness / 2, i + 1 - thickness / 2], [hi, hi], color=BASELINE, lw=1.0 * PT, zorder=REFERENCE_Z)
+            ax.plot(
+                [i + thickness / 2, i + 1 - thickness / 2], [hi, hi], color=BASELINE, lw=1.0 * PT, zorder=REFERENCE_Z
+            )
         _bar(ax, 0.0, total, n - 1, thickness, TOTAL)
         ax.text(n - 1, total + offset, fmt_money(total, currency, unit), ha="center", va="bottom", fontsize=10,
                 fontweight="bold")  # fmt: skip
@@ -832,7 +861,8 @@ def render_all(bundle: dict[str, Any], out_dir: str | Path) -> dict[str, Path]:
         "j_curve": chart_j_curve(result, out / "j_curve.png"),
         "tvpi_build": chart_tvpi_build(result, out / "tvpi_build.png"),
         "waterfall_tiers": chart_waterfall_tiers(
-            bundle["comparison"]["runs"]["european"], bundle["comparison"]["runs"]["american"],
+            bundle["comparison"]["runs"]["european"],
+            bundle["comparison"]["runs"]["american"],
             out / "waterfall_tiers.png",
         ),  # fmt: skip
         "gross_to_net": chart_gross_to_net(bundle["bridge"], out / "gross_to_net_bridge.png"),

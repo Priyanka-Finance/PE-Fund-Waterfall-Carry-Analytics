@@ -6,8 +6,8 @@ import datetime as dt
 
 import numpy as np
 import pytest
-from conftest import make_config, one_deal
 
+from conftest import make_config, one_deal
 from pefund import run_fund
 from pefund.fund import clawback_due, split_tiers
 
@@ -127,12 +127,27 @@ def test_pref_stops_accruing_on_capital_once_it_is_returned():
 # Whole-of-fund versus deal-by-deal
 # --------------------------------------------------------------------------- #
 WINNER_THEN_FLAT = [
-    {"name": "A", "investments": [{"date": "2020-12-31", "amount": 100.0}], "exit_date": "2023-12-31", "gross_moic": 2.0},
-    {"name": "B", "investments": [{"date": "2020-12-31", "amount": 100.0}], "exit_date": "2026-12-31", "gross_moic": 1.0},
+    {
+        "name": "A",
+        "investments": [{"date": "2020-12-31", "amount": 100.0}],
+        "exit_date": "2023-12-31",
+        "gross_moic": 2.0,
+    },
+    {
+        "name": "B",
+        "investments": [{"date": "2020-12-31", "amount": 100.0}],
+        "exit_date": "2026-12-31",
+        "gross_moic": 1.0,
+    },
 ]
 WINNER_THEN_WRITE_OFF = [
     WINNER_THEN_FLAT[0],
-    {"name": "B", "investments": [{"date": "2020-12-31", "amount": 100.0}], "exit_date": "2026-12-31", "gross_moic": 0.0},
+    {
+        "name": "B",
+        "investments": [{"date": "2020-12-31", "amount": 100.0}],
+        "exit_date": "2026-12-31",
+        "gross_moic": 0.0,
+    },
 ]
 #: Marks stay at cost so that the write-down rule does not anticipate the loss.
 NO_MARKDOWN = {"type": "american", "writedowns_as_realized": False}
@@ -165,8 +180,18 @@ def test_both_waterfalls_pay_the_same_total_carry_on_a_profitable_fund():
 
 def test_loss_carryforward_makes_later_winners_repay_earlier_losses():
     deals = [
-        {"name": "Loser", "investments": [{"date": "2020-12-31", "amount": 100.0}], "exit_date": "2022-12-31", "gross_moic": 0.0},
-        {"name": "Winner", "investments": [{"date": "2020-12-31", "amount": 100.0}], "exit_date": "2023-12-31", "gross_moic": 2.0},
+        {
+            "name": "Loser",
+            "investments": [{"date": "2020-12-31", "amount": 100.0}],
+            "exit_date": "2022-12-31",
+            "gross_moic": 0.0,
+        },
+        {
+            "name": "Winner",
+            "investments": [{"date": "2020-12-31", "amount": 100.0}],
+            "exit_date": "2023-12-31",
+            "gross_moic": 2.0,
+        },
     ]
     result = run_fund(make_config(deals, waterfall=NO_MARKDOWN))
     # The fund as a whole made nothing, so the winner's proceeds only return capital.
