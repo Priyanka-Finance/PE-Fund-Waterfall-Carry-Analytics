@@ -1,0 +1,31 @@
+# Worked example 2 - an early winner and a late loss (docs/worked_example.md).
+# Deal-by-deal pays carry on the winner before the loss is known, so the GP owes a
+# clawback at liquidation.  Run `pefund compare` on this file to see both waterfalls.
+fund:
+  name: "Worked example 2: early winner, late loss"
+  first_close: 2022-03-31
+  committed_capital: 100.0
+  gp_commitment_pct: 0.0
+  investment_period_years: 5
+  term_years: 10
+management_fee: {rate_investment_period: 0.0, rate_post_investment_period: 0.0}
+expenses: {organizational: 0.0, annual_operating: 0.0}
+waterfall:
+  type: american
+  pref_rate: 0.08
+  pref_compounding: annual
+  catch_up_rate: 1.0
+  carry_rate: 0.20
+  writedowns_as_realized: false   # the loss is not visible until the exit date
+clawback: {enabled: true, after_tax_limit: true, assumed_tax_rate: 0.40, escrow_pct: 0.0}
+investors:
+  - {name: Example LP, commitment: 100.0}
+deals:
+  - name: Winner
+    investments: [{date: 2022-03-31, amount: 50.0}]
+    exit_date: 2024-03-31
+    gross_moic: 3.0
+  - name: Loser
+    investments: [{date: 2022-03-31, amount: 50.0}]
+    exit_date: 2027-03-31
+    gross_moic: 0.0

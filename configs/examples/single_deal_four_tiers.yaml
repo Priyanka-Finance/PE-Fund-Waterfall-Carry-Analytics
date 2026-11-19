@@ -1,0 +1,19 @@
+# Worked example 1 - one deal, all four waterfall tiers (docs/worked_example.md).
+# No fees, no expenses and no GP commitment, so every number can be checked by hand.
+fund:
+  name: "Worked example 1: one deal, four tiers"
+  first_close: 2022-03-31
+  committed_capital: 100.0
+  gp_commitment_pct: 0.0
+  investment_period_years: 5
+  term_years: 10
+management_fee: {rate_investment_period: 0.0, rate_post_investment_period: 0.0}
+expenses: {organizational: 0.0, annual_operating: 0.0}
+waterfall: {type: european, pref_rate: 0.08, pref_compounding: annual, catch_up_rate: 1.0, carry_rate: 0.20}
+investors:
+  - {name: Example LP, commitment: 100.0}
+deals:
+  - name: Deal A
+    investments: [{date: 2022-03-31, amount: 100.0}]
+    exit_date: 2026-03-31
+    gross_moic: 2.0
