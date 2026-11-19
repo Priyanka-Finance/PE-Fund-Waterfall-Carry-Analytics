@@ -1,0 +1,5 @@
+# Everything needed for the model, the Excel builder, the dashboard, the Gen AI
+# layer and the tests.  Same as:  pip install -e ".[all]"
+#
+# For the engine alone (no dashboard, no LLM SDKs, no test tools):  pip install -e .
+-e .[all]
