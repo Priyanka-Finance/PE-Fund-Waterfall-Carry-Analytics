@@ -369,3 +369,4 @@ ruff, GitHub Actions.
 ## Licence
 
 [MIT](LICENSE). Copyright 2026 Tanmay Kumar.
+# PE-Fund-Waterfall-Carry-Analytics
